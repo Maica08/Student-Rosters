@@ -31,7 +31,7 @@ def commit(query, *args):
 
 @app.route("/")
 def home():
-    return "Home"
+    return render_template('index.html')
 
 @app.route("/students", methods=["GET"])
 def get_books():
