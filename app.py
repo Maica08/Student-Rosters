@@ -52,13 +52,13 @@ def home():
     return render_template('index.html', results=results)
 
 @app.route("/students", methods=["GET"])
-def get_books():
+def get_students():
     query = """SELECT * FROM students"""
-    data = execute(query)
+    results = execute(query)
     
-    if not data:
+    if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return make_response(jsonify(data), 200)
+    return render_template('students.html', results=results)
 
 if __name__ == "__main__":
     app.run(debug=True)

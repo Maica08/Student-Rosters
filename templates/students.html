@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Students{% endblock %}
+
+{% block content %}
+<div class="w-full h-fit mt-[10rem] mb-10 flex justify-center">
+    <table class="w-3/4 border border-gray-500 text-xl">
+        <thead>
+            <th class="font-bold text-center">
+                First Name
+            </th>
+            <th class="font-bold text-center">
+                Middle Name
+            </th>
+            <th class="font-bold text-center">
+                Last Name
+            </th>
+            <th class="font-bold text-center">
+                Birth Date
+            </th>
+            <th class="font-bold text-center">
+                Gender
+            </th>
+        </thead>
+        {% for result in results %}
+            <tr class="hover:bg-gray-200">
+                <td class="border-t border-t-gray-500 text-center">{{ result['firstname'] }}</td>
+                <td class="border-t border-t-gray-500 text-center">{{ result['middlename'] }}</td>
+                <td class="border-t border-t-gray-500 text-center">{{ result['lastname'] }}</td>
+                <td class="border-t border-t-gray-500 text-center">{{ result['birthdate'] }}</td>
+                <td class="border-t border-t-gray-500 text-center">{{ result['gender'] }}</td>
+            </tr>
+        {% endfor %}    
+    </table>
+</div>
+{% endblock %}
