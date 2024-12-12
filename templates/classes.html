@@ -20,13 +20,15 @@
             </th>
         </thead>
         {% for result in results %}
-            <tr class="hover:bg-gray-200">
-                <td class="border-t border-t-gray-500 text-center">{{ result['class description'] }}</td>
-                <td class="border-t border-t-gray-500 text-center">{{ result['location'] }}</td>
-                <td class="border-t border-t-gray-500 text-center">{{ result['course'] }}</td>
-                <td class="border-t border-t-gray-500 text-center">{{ result['code'] }}</td>
-            </tr>
-        {% endfor %}    
+        <tr class="hover:bg-gray-200">
+            <td class="border-t border-t-gray-500 text-center">
+                <a href="/classes/{{ result['idclasses'] }}">{{ result['class description'] }}</a>
+            </td>
+            <td class="border-t border-t-gray-500 text-center">{{ result['location'] }}</td>
+            <td class="border-t border-t-gray-500 text-center">{{ result['course'] }}</td>
+            <td class="border-t border-t-gray-500 text-center">{{ result['code'] }}</td>
+        </tr>
+        {% endfor %}
     </table>
 </div>
 {% endblock %}

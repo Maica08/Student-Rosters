@@ -91,5 +91,27 @@ def get_classes():
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('classes.html', results=results)
 
+@app.route("/classes/<int:idclasses>", methods=["GET"])
+def get_class(idclasses):
+    query = """
+    SELECT 
+        idclasses, 
+        classes.description AS 'class description',
+        CONCAT(firstname, ' ', lastname) as student
+    FROM classes
+    INNER JOIN roster
+    ON idclasses = idclass
+    INNER JOIN students
+    ON idstudents = idstudent
+    WHERE idclasses = %s
+    ORDER BY students.firstname
+    """
+    results = execute(query, idclasses)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return render_template('class.html', results=results)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

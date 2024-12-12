@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Teachers{% endblock %}
+
+{% block content %}
+<div class="w-full h-fit mt-[10rem] mb-10 flex justify-center">
+    <table class="w-3/4 border border-gray-500 text-xl">
+        <thead>
+            <th class="font-bold text-center">
+                Student Name
+            </th>
+        </thead>
+        {% for result in results %}
+            <tr class="hover:bg-gray-200">
+                <td class="border-t border-t-gray-500 text-center">{{ result['student'] }}</td>
+            </tr>
+        {% endfor %}    
+    </table>
+</div>
+{% endblock %}
