@@ -108,9 +108,18 @@ def get_class(idclasses):
     """
     results = execute(query, idclasses)
     
+    query1 = """
+        SELECT 
+            idclasses, 
+            classes.description AS 'class description'
+        FROM classes
+        WHERE idclasses = %s
+    """
+    cur_class = execute(query1, idclasses)
+    
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('class.html', results=results)
+    return render_template('class.html', results=results, cur_class=cur_class)
 
 
 if __name__ == "__main__":

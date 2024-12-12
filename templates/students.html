@@ -24,7 +24,12 @@
         </thead>
         {% for result in results %}
             <tr class="hover:bg-gray-200">
-                <td class="border-t border-t-gray-500 text-center">{{ result['firstname'] }}</td>
+                <td class="border-t border-t-gray-500 text-center relative">
+                    <div class="absolute flex -left-12 w-10 h-fit py-1 gap-1">
+                        <i class="fa-solid fa-pen-to-square z-10 text-gray-400"></i>
+                        <i class="fa-solid fa-trash z-10 text-gray-400"></i>
+                    </div>
+                    {{ result['firstname'] }}</td>
                 <td class="border-t border-t-gray-500 text-center">{{ result['middlename'] }}</td>
                 <td class="border-t border-t-gray-500 text-center">{{ result['lastname'] }}</td>
                 <td class="border-t border-t-gray-500 text-center">{{ result['birthdate'] }}</td>

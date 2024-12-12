@@ -3,7 +3,11 @@
 {% block title %}Teachers{% endblock %}
 
 {% block content %}
-<div class="w-full h-fit mt-[10rem] mb-10 flex justify-center">
+<div class="flex flex-col w-full h-fit mt-[10rem] mb-10 flex items-center">
+    {% for class in cur_class %}
+    <div class="w-3/4 text-3xl font-semibold mb-3">Students in {{ class['class description'] }}</div>
+    {% endfor %}    
+
     <table class="w-3/4 border border-gray-500 text-xl">
         <thead>
             <th class="font-bold text-center">

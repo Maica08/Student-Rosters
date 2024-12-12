@@ -20,8 +20,12 @@
             </th>
         </thead>
         {% for result in results %}
-        <tr class="hover:bg-gray-200">
-            <td class="border-t border-t-gray-500 text-center">
+        <tr class="hover:bg-gray-200 ">
+            <td class="border-t border-t-gray-500 text-center relative">
+                <div class="absolute flex -left-12 w-10 h-fit py-1 gap-1">
+                    <i class="fa-solid fa-pen-to-square text-gray-400 z-10"></i>
+                    <i class="fa-solid fa-trash text-gray-400 z-10"></i>
+                </div>                
                 <a href="/classes/{{ result['idclasses'] }}">{{ result['class description'] }}</a>
             </td>
             <td class="border-t border-t-gray-500 text-center">{{ result['location'] }}</td>
