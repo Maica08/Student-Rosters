@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
     <title>{% block title %}{% endblock %}</title>
 </head>
-<body class="flex flex-col w-screen min-h-screen">
+<body class="flex flex-col w-screen min-h-screen overflow-x-hidden">
     <div class="fixed w-full h-20 flex bg-blue-700 text-white p-2">
-        <div class="w-1/2 text-5xl pl-2 h-fit mt-auto mb-2">Student Roster</div>
-        <div class="w-1/2 text-xl h-fit mt-auto flex justify-end pr-10 gap-10 mb-2">
+        <div class="w-1/2 text-5xl pl-10 h-fit mt-auto mb-2 font-bold">Student Roster</div>
+        <div class="w-1/2 text-xl h-fit mt-auto flex justify-end pr-10 gap-10 mb-2 font-semibold">
             <a href="/">Home</a>
-            <a href="">Teachers</a>
+            <a href="/teachers">Teachers</a>
             <a href="/students">Students</a>
             <a href="">Classes</a>
         </div>
