@@ -1,5 +1,36 @@
 {% extends 'base.html' %}
 
+{% block title %}Home{% endblock %}
+
 {% block content %}
-<div class="w-full h-fit text-xl text-center text-red-300">This is homepage</div>
+<div class="w-full h-fit mt-[10rem] mb-10 flex justify-center">
+    <table class="w-3/4 border border-gray-500 text-xl">
+        <thead>
+            <th class="font-bold text-center">
+                Class
+            </th>
+            <th class="font-bold text-center">
+                Period
+            </th>
+            <th class="font-bold text-center">
+                Course
+            </th>
+            <th class="font-bold text-center">
+                Teacher
+            </th>
+            <th class="font-bold text-center">
+                Room
+            </th>
+        </thead>
+        {% for result in results %}
+            <tr class="hover:bg-gray-200">
+                <td class="border-t border-t-gray-500">{{ result['class'] }}</td>
+                <td class="border-t border-t-gray-500">{{ result['period'] }}</td>
+                <td class="border-t border-t-gray-500">{{ result['course'] }}</td>
+                <td class="border-t border-t-gray-500">{{ result['teacher'] }}</td>
+                <td class="border-t border-t-gray-500">{{ result['room'] }}</td>
+            </tr>
+        {% endfor %}    
+    </table>
+</div>
 {% endblock %}

@@ -8,6 +8,14 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body class="flex flex-col w-screen min-h-screen">
+    <div class="fixed w-full h-28 flex bg-blue-700 text-white">
+        <div class="w-1/2 text-4xl pl-2 h-full">Student Roster</div>
+        <div class="w-1/2 text-xl h-full flex flex-end pr-2 gap-2">
+            <a href="">Teachers</a>
+            <a href="">Students</a>
+            <a href="">Class</a>
+        </div>
+    </div>
     {% block content %}{% endblock %}
 </body>
 </html>
