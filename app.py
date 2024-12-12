@@ -69,5 +69,27 @@ def get_teachers():
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('teachers.html', results=results)
 
+@app.route("/classes", methods=["GET"])
+def get_classes():
+    query = """
+    SELECT 
+        idclasses, 
+        classes.description AS 'class description',
+        rooms.location AS location,
+        courses.name AS course,
+        courses.code AS code
+    FROM classes
+    INNER JOIN rooms
+    ON idrooms = idroom
+    INNER JOIN courses
+    ON idcourses = idcourse
+    ORDER BY classes.description
+    """
+    results = execute(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return render_template('classes.html', results=results)
+
 if __name__ == "__main__":
     app.run(debug=True)
