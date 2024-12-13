@@ -37,13 +37,12 @@ def commit(query, *args):
     try:
         cur.execute(query, args)
         mysql.connection.commit()
-        rows_affected = cur.rowcount
+        return cur.rowcount
     except Exception as e:
         mysql.connection.rollback()
-        return make_response(jsonify({"error": "Commit failed", "message": str(e)}), 500)
+        raise RuntimeError(f"Commit failed: {str(e)}")
     finally:
         cur.close()
-    return rows_affected
 
 def validate_request_data(required_fields):
     if not request.is_json:
@@ -91,8 +90,9 @@ def get_students():
     query = """SELECT * FROM students ORDER BY firstname"""
     results = execute_template(query)
     
-    if isinstance(results, make_response):
+    if isinstance(results, Flask.response_class):
         return results
+
     return render_template('index.html', results=results)
 
 @app.route("/api/students", methods=["GET"])
@@ -108,8 +108,8 @@ def add_students():
     data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])
     query = """INSERT INTO students (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
     rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"])
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify({"message": "data created successfully", "rows_affected": rows}), 201)
 
 @app.route("/api/students/<int:idstudents>", methods=["PUT"])
@@ -117,16 +117,16 @@ def update_students(idstudents):
     data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])
     query = """UPDATE students SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
     rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"], idstudents)
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify({"message": "data updated successfully", "rows_affected": rows}), 200)
 
 @app.route("/api/students/<int:idstudents>", methods=["DELETE"])
 def delete_student(idstudents):
     query = "DELETE FROM students WHERE idstudents=%s"
     rows = commit(query, idstudents)
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify({"message": "data deleted successfully", "rows_affected": rows}), 200)
     
 # Teachers CRUD
@@ -154,8 +154,8 @@ def add_teachers():
     query = """INSERT INTO teachers (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
     rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"])
     
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
@@ -315,8 +315,8 @@ def add_rooms():
     query = """INSERT INTO rooms (location, description) VALUES (%s, %s)"""
     rows = commit(query, data["location"], data.get("description"))
     
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
@@ -327,8 +327,8 @@ def update_rooms(idrooms):
     query = """UPDATE rooms SET location=%s, description=%s WHERE idrooms=%s"""
     rows = commit(query, data["location"], data.get("description"), idrooms)
         
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -338,8 +338,8 @@ def delete_room(idrooms):
     query = """DELETE FROM rooms WHERE idrooms=%s"""
     rows = commit(query, idrooms)
     
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
@@ -377,8 +377,8 @@ def add_courses():
     query = """INSERT INTO courses (name, code) VALUES (%s, %s)"""
     rows = commit(query, data["name"], data["code"])
     
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
@@ -389,8 +389,8 @@ def update_courses(idcourses):
     query = """UPDATE courses SET name=%s, code=%s WHERE idcourses=%s"""
     rows = commit(query, data["name"], data["code"], idcourses)
         
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -400,8 +400,8 @@ def delete_course(idcourses):
     query = """DELETE FROM courses WHERE idcourses=%s"""
     rows = commit(query, idcourses)
         
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
@@ -444,8 +444,8 @@ def add_roster():
     query = """INSERT INTO roster (idclass, idstudent, idteacher, class_period) VALUES (%s, %s, %s, %s)"""
     rows = commit(query, data.get("idclass"), data.get("idstudent"), data.get("idteacher"), data["class_period"])
     
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
@@ -456,8 +456,8 @@ def update_roster(idroster):
     query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s WHERE idroster=%s"""
     rows = commit(query, data.get("idclass"), data.get("idstudent"), data.get("idteacher"), data["class_period"], idroster)
         
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -467,8 +467,8 @@ def delete_roster(idroster):
     query = """DELETE FROM roster WHERE idroster=%s"""
     rows = commit(query, idroster)
         
-    if isinstance(rows, make_response):
-        return rows
+    if isinstance(rows, Flask.response_class):
+        return rows    
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   

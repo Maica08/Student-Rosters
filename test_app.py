@@ -11,10 +11,12 @@ def client():
     app.config['MYSQL_PASSWORD'] = 'mock_password'
     app.config['MYSQL_DB'] = 'mock_db'
 
-    with app.app_context():  
-        with app.test_client() as client:
-            yield client
-
+    # Mock the MySQL connection object to prevent real connections
+    with patch('app.mysql') as mock_mysql:
+        mock_connection = MagicMock()
+        mock_mysql.connection = mock_connection
+        yield app.test_client()
+        
 # Test for students
 @patch('app.mysql.connection')
 def test_get_students_api(mock_connection, client):
@@ -109,8 +111,8 @@ def test_add_students_missing_fields(mock_connection, client):
     assert response.status_code == 400
     assert response.is_json
     data = response.get_json()
-    assert 'error' in data
-    assert data['message'] == "'birthdate' is required"
+    assert data['error'] == "Bad Request"
+    assert data['message'] == "400 Bad Request: 'birthdate' is required"
 
 @patch('app.mysql.connection')
 def test_get_students_no_data(mock_connection, client):
