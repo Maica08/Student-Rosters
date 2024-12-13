@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request, make_response
 from flask_mysqldb import MySQL
+from auth import auth_bp
 from werkzeug.exceptions import BadRequest
 
 app = Flask(__name__)
