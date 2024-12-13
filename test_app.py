@@ -552,3 +552,113 @@ def test_get_courses_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+
+# Test for roster
+@patch('app.mysql.connection')
+def test_get_roster_api(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = [
+        {'idroster': 1, 'idclass': 1, 'idstudent': 1, 'idteacher': 1, 'class_period': 'Morning'}
+    ]
+    mock_cursor.description = (
+        ('idroster',), ('idclass',), ('idstudent',), ('idteacher',)
+    )
+
+    response = client.get('/api/roster')
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data == [
+        {'idroster': 1, 'idclass': 1, 'idstudent': 1, 'idteacher': 1, 'class_period': 'Morning'}
+    ]
+
+@patch('app.mysql.connection')
+def test_add_roster(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+    
+
+    response = client.post(
+        '/api/roster',
+        json={
+            'idclass': 1, 
+            'idstudent': 2, 
+            'idteacher': 3, 
+            'class_period': 'Morning'
+        }
+    )
+
+    assert response.status_code == 201
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data created successfully'
+    assert data['rows_affected'] == 1
+
+@patch('app.mysql.connection')
+def test_update_roster(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+    
+    response = client.put(
+        '/api/roster/1',
+        json={
+            'idclass': 1, 
+            'idstudent': 2, 
+            'idteacher': 3, 
+            'class_period': 'Afternoon'
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data updated successfully'
+    assert data['rows_affected'] == 1
+
+@patch('app.mysql.connection')
+def test_delete_roster(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+
+    response = client.delete('/api/roster/1')
+
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data deleted successfully'
+    assert data['rows_affected'] == 1
+    
+@patch('app.mysql.connection')
+def test_add_roster_missing_fields(mock_connection, client):
+    response = client.post(
+        '/api/roster',
+        json={
+            'idclass': 1, 
+            'idstudent': 2, 
+            'idteacher': 3, 
+        }
+    )
+
+    assert response.status_code == 400
+    assert response.is_json
+    data = response.get_json()
+    assert data['error'] == "Bad Request"
+    assert data['message'] == "400 Bad Request: 'class_period' is required"
+
+@patch('app.mysql.connection')
+def test_get_roster_no_data(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = []
+
+    response = client.get('/api/roster')
+
+    assert response.status_code == 404
+    assert response.is_json
+    data = response.get_json()
+    assert 'message' in data
+    assert data['message'] == 'data not found'
