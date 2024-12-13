@@ -449,4 +449,106 @@ def test_get_rooms_no_data(mock_connection, client):
     assert 'message' in data
     assert data['message'] == 'data not found'
 
+# Test for courses
+@patch('app.mysql.connection')
+def test_get_courses_api(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = [
+        {'idcourses': 1, 'name': 'Modern Literature', 'code': 'EL1'}
+    ]
+    mock_cursor.description = (
+        ('idcourses',), ('name',), ('code',)
+    )
 
+    response = client.get('/api/courses')
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data == [
+        {'idcourses': 1, 'name': 'Modern Literature', 'code': 'EL1'}
+    ]
+
+@patch('app.mysql.connection')
+def test_add_courses(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+    
+
+    response = client.post(
+        '/api/courses',
+        json={
+            'name': 'Western Literature', 
+            'code': 'EL101'
+        }
+    )
+
+    assert response.status_code == 201
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data created successfully'
+    assert data['rows_affected'] == 1
+
+@patch('app.mysql.connection')
+def test_update_courses(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+    
+    response = client.put(
+        '/api/courses/1',
+        json={
+            'name': 'Western History', 
+            'code': 'H101'
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data updated successfully'
+    assert data['rows_affected'] == 1
+
+@patch('app.mysql.connection')
+def test_delete_course(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+
+    response = client.delete('/api/courses/1')
+
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data deleted successfully'
+    assert data['rows_affected'] == 1
+    
+@patch('app.mysql.connection')
+def test_add_courses_missing_fields(mock_connection, client):
+    response = client.post(
+        '/api/courses',
+        json={
+            'name': 'Western Literature', 
+        }
+    )
+
+    assert response.status_code == 400
+    assert response.is_json
+    data = response.get_json()
+    assert data['error'] == "Bad Request"
+    assert data['message'] == "400 Bad Request: 'code' is required"
+
+@patch('app.mysql.connection')
+def test_get_courses_no_data(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = []
+
+    response = client.get('/api/courses')
+
+    assert response.status_code == 404
+    assert response.is_json
+    data = response.get_json()
+    assert 'message' in data
+    assert data['message'] == 'data not found'
