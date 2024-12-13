@@ -73,8 +73,16 @@ def get_students():
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('students.html', results=results)
 
+@app.route("/api/students", methods=["GET"])
+def get_students_api():
+    query = """SELECT * FROM students """
+    results = execute_json(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return make_response(jsonify(results), 200)
 
-@app.route("/students", methods=["POST"])
+@app.route("/api/students", methods=["POST"])
 def add_students():
     data = request.get_json()
     firstname = data["firstname"]
@@ -90,7 +98,7 @@ def add_students():
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
-@app.route("/students/<int:idstudents>", methods=["PUT"])
+@app.route("/api/students/<int:idstudents>", methods=["PUT"])
 def update_students(idstudents):
     data = request.get_json()
     firstname = data["firstname"]
@@ -127,7 +135,16 @@ def get_teachers():
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('teachers.html', results=results)
 
-@app.route("/teachers", methods=["POST"])
+@app.route("/api/teachers", methods=["GET"])
+def get_teachers_api():
+    query = """SELECT * FROM teachers """
+    results = execute_json(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return make_response(jsonify(results), 200)
+
+@app.route("/api/teachers", methods=["POST"])
 def add_teachers():
     data = request.get_json()
     firstname = data["firstname"]
@@ -143,7 +160,7 @@ def add_teachers():
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
-@app.route("/teachers/<int:idteachers>", methods=["PUT"])
+@app.route("/api/teachers/<int:idteachers>", methods=["PUT"])
 def update_teachers(idteachers):
     data = request.get_json()
     firstname = data["firstname"]
@@ -159,7 +176,7 @@ def update_teachers(idteachers):
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
     
-@app.route("/teachers/<int:idteachers>", methods=["DELETE"])
+@app.route("/api/teachers/<int:idteachers>", methods=["DELETE"])
 def delete_teacher(idteachers):
     query = """DELETE FROM teachers WHERE idteachers=%s"""
     rows = commit(query, idteachers)
@@ -192,7 +209,16 @@ def get_classes():
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('classes.html', results=results)
 
-@app.route("/classes/<int:idclasses>", methods=["GET"])
+@app.route("/api/classes", methods=["GET"])
+def get_classes_api():
+    query = """SELECT * FROM classes """
+    results = execute_json(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return make_response(jsonify(results), 200)
+
+@app.route("/api/classes/<int:idclasses>", methods=["GET"])
 def get_class(idclasses):
     query = """
     SELECT 
@@ -222,7 +248,7 @@ def get_class(idclasses):
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('class.html', results=jsonify(results), cur_class=cur_class)
 
-@app.route("/classes", methods=["POST"])
+@app.route("/api/classes", methods=["POST"])
 def add_classes():
     data = request.get_json()
     description = data["description"]
@@ -235,7 +261,7 @@ def add_classes():
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
-@app.route("/classes/<int:idclasses>", methods=["PUT"])
+@app.route("/api/classes/<int:idclasses>", methods=["PUT"])
 def update_classes(idclasses):
     data = request.get_json()
     description = data["description"]
@@ -249,7 +275,7 @@ def update_classes(idclasses):
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
     
-@app.route("/classes/<int:idclasses>", methods=["DELETE"])
+@app.route("/api/classes/<int:idclasses>", methods=["DELETE"])
 def delete_class(idclasses):
     query = """DELETE FROM classes WHERE idclasses=%s"""
     rows = commit(query, idclasses)
@@ -275,9 +301,18 @@ def get_rooms():
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('classes.html', results=results)
+    return render_template('rooms.html', results=results)
 
-@app.route("/rooms", methods=["POST"])
+@app.route("/api/rooms", methods=["GET"])
+def get_rooms_api():
+    query = """SELECT * FROM rooms """
+    results = execute_json(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return make_response(jsonify(results), 200)
+
+@app.route("/api/rooms", methods=["POST"])
 def add_rooms():
     data = request.get_json()
     location = data["location"]
@@ -289,7 +324,7 @@ def add_rooms():
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
-@app.route("/rooms/<int:idrooms>", methods=["PUT"])
+@app.route("/api/rooms/<int:idrooms>", methods=["PUT"])
 def update_rooms(idrooms):
     data = request.get_json()
     location = data["location"]
@@ -302,7 +337,7 @@ def update_rooms(idrooms):
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
     
-@app.route("/rooms/<int:idrooms>", methods=["DELETE"])
+@app.route("/api/rooms/<int:idrooms>", methods=["DELETE"])
 def delete_room(idrooms):
     query = """DELETE FROM rooms WHERE idrooms=%s"""
     rows = commit(query, idrooms)
@@ -321,15 +356,24 @@ def get_courses():
         name,
         code
     FROM courses
-    ORDER BY location
+    ORDER BY name
     """
     results = execute_template(query)
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('classes.html', results=results)
+    return render_template('courses.html', results=results)
 
-@app.route("/courses", methods=["POST"])
+@app.route("/api/courses", methods=["GET"])
+def get_courses_api():
+    query = """SELECT * FROM courses """
+    results = execute_json(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return make_response(jsonify(results), 200)
+
+@app.route("/api/courses", methods=["POST"])
 def add_courses():
     data = request.get_json()
     name = data["name"]
@@ -341,7 +385,7 @@ def add_courses():
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
-@app.route("/courses/<int:idcourses>", methods=["PUT"])
+@app.route("/api/courses/<int:idcourses>", methods=["PUT"])
 def update_courses(idcourses):
     data = request.get_json()
     name = data["name"]
@@ -354,7 +398,7 @@ def update_courses(idcourses):
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
     
-@app.route("/courses/<int:idcourses>", methods=["DELETE"])
+@app.route("/api/courses/<int:idcourses>", methods=["DELETE"])
 def delete_course(idcourses):
     query = """DELETE FROM courses WHERE idcourses=%s"""
     rows = commit(query, idcourses)
@@ -367,42 +411,65 @@ def delete_course(idcourses):
 
 @app.route("/roster", methods=["GET"])
 def get_roster():
-    query = """SELECT * FROM roster ORDER BY firstname"""
+    query = """SELECT 
+                idroster, idclass, idstudent, idteacher, class_period,
+                CONCAT(teachers.firstname, ' ', teachers.lastname) AS teacher,
+                CONCAT(students.firstname, ' ', students.lastname) AS student,
+                classes.description AS description
+                FROM roster
+                INNER JOIN classes
+                ON idclasses = idclass
+                INNER JOIN students
+                ON idstudents = idstudent
+                INNER JOIN teachers
+                ON idteachers = idteacher
+                """
     results = execute_template(query)
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('roster.html', results=results)
 
-@app.route("/roster", methods=["POST"])
+@app.route("/api/roster", methods=["GET"])
+def get_roster_api():
+    query = """SELECT * FROM roster """
+    results = execute_json(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return make_response(jsonify(results), 200)
+
+@app.route("/api/roster", methods=["POST"])
 def add_roster():
     data = request.get_json()
     idclass = data.get("idclass")
     idstudent = data.get("idstudent")
     idteacher = data.get("idteacher")
+    class_period = data["class_period"]
     
-    query = """INSERT INTO roster (idclass, idstudent, idteacher) VALUES (%s, %s, %s)"""
-    rows = commit(query, idclass, idstudent, idteacher)
+    query = """INSERT INTO roster (idclass, idstudent, idteacher, class_period) VALUES (%s, %s, %s, %s)"""
+    rows = commit(query, idclass, idstudent, idteacher, class_period)
 
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
-@app.route("/roster/<int:idroster>", methods=["PUT"])
+@app.route("/api/roster/<int:idroster>", methods=["PUT"])
 def update_roster(idroster):
     data = request.get_json()
     idclass = data.get("idclass")
     idstudent = data.get("idstudent")
     idteacher = data.get("idteacher")
+    class_period = data["class_period"]
     
     query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s WHERE idroster=%s"""
-    rows = commit(query, idclass, idstudent, idteacher, idroster)
+    rows = commit(query, idclass, idstudent, idteacher, class_period, idroster)
         
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
     
-@app.route("/roster/<int:idroster>", methods=["DELETE"])
+@app.route("/api/roster/<int:idroster>", methods=["DELETE"])
 def delete_roster(idroster):
     query = """DELETE FROM roster WHERE idroster=%s"""
     rows = commit(query, idroster)
@@ -410,6 +477,11 @@ def delete_roster(idroster):
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
+    
+    
+@app.route("/api")
+def api():
+    return render_template('api.html')
 
 
 if __name__ == "__main__":

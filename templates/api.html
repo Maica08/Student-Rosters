@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}API{% endblock %}
+
+{% block content %}
+<div class="w-full h-fit mt-[10rem] mb-10 flex justify-center">
+    <div class="w-60 p-2 flex flex-col border border-gray-500 text-xl">
+        <div class="font-bold text-center text-4xl">
+            API Routes
+        </div>
+        <div class="w-full h-fit p-2">
+            <ul>
+                <li><a href="api/classes" class="hover:text-blue-500">Classes</a></li>
+                <li><a href="api/students" class="hover:text-blue-500">Students</a></li>
+                <li><a href="api/teachers" class="hover:text-blue-500">Teachers</a></li>
+                <li><a href="api/rooms" class="hover:text-blue-500">Rooms</a></li>
+                <li><a href="api/courses" class="hover:text-blue-500">Courses</a></li>
+                <li><a href="api/roster" class="hover:text-blue-500">Roster</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
