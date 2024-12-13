@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request, make_response
 from flask_mysqldb import MySQL
+from werkzeug.exceptions import BadRequest
 
 app = Flask(__name__)
 app.config["MYSQL_HOST"] = "localhost"
@@ -10,35 +11,56 @@ mysql = MySQL(app)
 
 def execute_json(query, *args):
     cur = mysql.connection.cursor()
-    if args:
-        cur.execute(query, tuple(args))
-    else:
-        cur.execute(query)
-    data = cur.fetchall()
-    cur.close()
-    
+    try:
+        cur.execute(query, args if args else ())
+        data = cur.fetchall()
+    except Exception as e:
+        return make_response(jsonify({"error": "Database error", "message": str(e)}), 500)
+    finally:
+        cur.close()
     return data
 
 def execute_template(query, *args):
     cur = mysql.connection.cursor()
-    if args:
-        cur.execute(query, tuple(args))
-    else:
-        cur.execute(query)
-    columns = [col[0] for col in cur.description]
-    data = [dict(zip(columns, row)) for row in cur.fetchall()]
-    cur.close()
-    
+    try:
+        cur.execute(query, args if args else ())
+        columns = [col[0] for col in cur.description]
+        data = [dict(zip(columns, row)) for row in cur.fetchall()]
+    except Exception as e:
+        return make_response(jsonify({"error": "Database error", "message": str(e)}), 500)
+    finally:
+        cur.close()
     return data
 
 def commit(query, *args):
-   cur = mysql.connection.cursor()
-   cur.execute(query, tuple(args))
-   mysql.connection.commit()
-   rows_affected = cur.rowcount
-   cur.close()
-   
-   return rows_affected
+    cur = mysql.connection.cursor()
+    try:
+        cur.execute(query, args)
+        mysql.connection.commit()
+        rows_affected = cur.rowcount
+    except Exception as e:
+        mysql.connection.rollback()
+        return make_response(jsonify({"error": "Commit failed", "message": str(e)}), 500)
+    finally:
+        cur.close()
+    return rows_affected
+
+def validate_request_data(required_fields):
+    if not request.is_json:
+        raise BadRequest("Request must be JSON")
+    data = request.get_json()
+    for field in required_fields:
+        if field not in data:
+            raise BadRequest(f"'{field}' is required")
+    return data
+
+@app.errorhandler(BadRequest)
+def handle_bad_request(e):
+    return make_response(jsonify({"error": "Bad Request", "message": str(e)}), 400)
+
+@app.errorhandler(404)
+def handle_not_found(e):
+    return make_response(jsonify({"error": "Not Found", "message": str(e)}), 404)
 
 
 @app.route("/")
