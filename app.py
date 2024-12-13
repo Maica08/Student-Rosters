@@ -250,13 +250,167 @@ def update_classes(idclasses):
         ), 200)
     
 @app.route("/classes/<int:idclasses>", methods=["DELETE"])
-def delete_classe(idclasses):
+def delete_class(idclasses):
     query = """DELETE FROM classes WHERE idclasses=%s"""
     rows = commit(query, idclasses)
         
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
+    
+
+# Rooms CRUD
+
+@app.route("/rooms", methods=["GET"])
+def get_rooms():
+    query = """
+    SELECT 
+        idrooms, 
+        description,
+        location
+    FROM rooms
+    ORDER BY location
+    """
+    results = execute_template(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return render_template('classes.html', results=results)
+
+@app.route("/rooms", methods=["POST"])
+def add_rooms():
+    data = request.get_json()
+    location = data["location"]
+    description = data.get("description")
+    query = """INSERT INTO rooms (location, description) VALUES (%s, %s)"""
+    rows = commit(query, location, description)
+    
+    return make_response(jsonify(
+        {"message": "data created successfully", "rows_affected": rows}
+        ), 201)
+
+@app.route("/rooms/<int:idrooms>", methods=["PUT"])
+def update_rooms(idrooms):
+    data = request.get_json()
+    location = data["location"]
+    description = data.get("description")
+    
+    query = """UPDATE rooms SET location=%s, description=%s WHERE idrooms=%s"""
+    rows = commit(query, location, description, idrooms)
+        
+    return make_response(jsonify(
+        {"message": "data updated successfully", "rows_affected": rows}
+        ), 200)
+    
+@app.route("/rooms/<int:idrooms>", methods=["DELETE"])
+def delete_room(idrooms):
+    query = """DELETE FROM rooms WHERE idrooms=%s"""
+    rows = commit(query, idrooms)
+        
+    return make_response(jsonify(
+        {"message": "data deleted successfully", "rows_affected": rows}
+        ), 200)   
+    
+# Courses CRUD
+
+@app.route("/courses", methods=["GET"])
+def get_courses():
+    query = """
+    SELECT 
+        idcourses, 
+        name,
+        code
+    FROM courses
+    ORDER BY location
+    """
+    results = execute_template(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return render_template('classes.html', results=results)
+
+@app.route("/courses", methods=["POST"])
+def add_courses():
+    data = request.get_json()
+    name = data["name"]
+    code = data["code"]
+    query = """INSERT INTO courses (name, code) VALUES (%s, %s)"""
+    rows = commit(query, name, code)
+    
+    return make_response(jsonify(
+        {"message": "data created successfully", "rows_affected": rows}
+        ), 201)
+
+@app.route("/courses/<int:idcourses>", methods=["PUT"])
+def update_courses(idcourses):
+    data = request.get_json()
+    name = data["name"]
+    code = data["code"]
+    
+    query = """UPDATE courses SET name=%s, code=%s WHERE idcourses=%s"""
+    rows = commit(query, name, code, idcourses)
+        
+    return make_response(jsonify(
+        {"message": "data updated successfully", "rows_affected": rows}
+        ), 200)
+    
+@app.route("/courses/<int:idcourses>", methods=["DELETE"])
+def delete_course(idcourses):
+    query = """DELETE FROM courses WHERE idcourses=%s"""
+    rows = commit(query, idcourses)
+        
+    return make_response(jsonify(
+        {"message": "data deleted successfully", "rows_affected": rows}
+        ), 200)   
+
+# Roster CRUD
+
+@app.route("/roster", methods=["GET"])
+def get_roster():
+    query = """SELECT * FROM roster ORDER BY firstname"""
+    results = execute_template(query)
+    
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return render_template('roster.html', results=results)
+
+@app.route("/roster", methods=["POST"])
+def add_roster():
+    data = request.get_json()
+    idclass = data.get("idclass")
+    idstudent = data.get("idstudent")
+    idteacher = data.get("idteacher")
+    
+    query = """INSERT INTO roster (idclass, idstudent, idteacher) VALUES (%s, %s, %s)"""
+    rows = commit(query, idclass, idstudent, idteacher)
+
+    return make_response(jsonify(
+        {"message": "data created successfully", "rows_affected": rows}
+        ), 201)
+
+@app.route("/roster/<int:idroster>", methods=["PUT"])
+def update_roster(idroster):
+    data = request.get_json()
+    idclass = data.get("idclass")
+    idstudent = data.get("idstudent")
+    idteacher = data.get("idteacher")
+    
+    query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s WHERE idroster=%s"""
+    rows = commit(query, idclass, idstudent, idteacher, idroster)
+        
+    return make_response(jsonify(
+        {"message": "data updated successfully", "rows_affected": rows}
+        ), 200)
+    
+@app.route("/roster/<int:idroster>", methods=["DELETE"])
+def delete_roster(idroster):
+    query = """DELETE FROM roster WHERE idroster=%s"""
+    rows = commit(query, idroster)
+        
+    return make_response(jsonify(
+        {"message": "data deleted successfully", "rows_affected": rows}
+        ), 200)   
+
 
 if __name__ == "__main__":
     app.run(debug=True)
