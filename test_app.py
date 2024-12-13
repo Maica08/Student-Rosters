@@ -343,3 +343,110 @@ def test_get_classes_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+
+
+# Test for rooms
+@patch('app.mysql.connection')
+def test_get_rooms_api(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = [
+        {'idrooms': 1, 'location': 'Main Building, Room 2', 'description': 'Conference hall'}
+    ]
+    mock_cursor.description = (
+        ('idrooms',), ('location',), ('description',), ('idcourse',)
+    )
+
+    response = client.get('/api/rooms')
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data == [
+        {'idrooms': 1, 'location': 'Main Building, Room 2', 'description': 'Conference hall'}
+    ]
+
+@patch('app.mysql.connection')
+def test_add_rooms(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+    
+
+    response = client.post(
+        '/api/rooms',
+        json={
+            'location': 'Main Building, Room 1',
+            'description': 'Meeting room'
+        }
+    )
+
+    assert response.status_code == 201
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data created successfully'
+    assert data['rows_affected'] == 1
+
+@patch('app.mysql.connection')
+def test_update_rooms(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+    
+    response = client.put(
+        '/api/rooms/1',
+        json={
+            'location': 'New Building, Room 2',
+            'description': 'Grand hall'
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data updated successfully'
+    assert data['rows_affected'] == 1
+
+@patch('app.mysql.connection')
+def test_delete_room(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 1
+
+    response = client.delete('/api/rooms/1')
+
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert data['message'] == 'data deleted successfully'
+    assert data['rows_affected'] == 1
+    
+@patch('app.mysql.connection')
+def test_add_rooms_missing_fields(mock_connection, client):
+    response = client.post(
+        '/api/rooms',
+        json={
+            'description': 'Grand hall'
+        }
+    )
+
+    assert response.status_code == 400
+    assert response.is_json
+    data = response.get_json()
+    assert data['error'] == "Bad Request"
+    assert data['message'] == "400 Bad Request: 'location' is required"
+
+@patch('app.mysql.connection')
+def test_get_rooms_no_data(mock_connection, client):
+    mock_cursor = MagicMock()
+    mock_connection.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = []
+
+    response = client.get('/api/rooms')
+
+    assert response.status_code == 404
+    assert response.is_json
+    data = response.get_json()
+    assert 'message' in data
+    assert data['message'] == 'data not found'
+
+
