@@ -14,8 +14,7 @@ def execute(query, *args):
         cur.execute(query, tuple(args))
     else:
         cur.execute(query)
-    columns = [col[0] for col in cur.description]
-    data = [dict(zip(columns, row)) for row in cur.fetchall()]
+    data = cur.fetchall()
     cur.close()
     
     return data
@@ -49,7 +48,9 @@ def home():
     """
     
     results = execute(query)
-    return render_template('index.html', results=results)
+    return render_template('index.html', results=jsonify(results))
+
+# Students CRUD
 
 @app.route("/students", methods=["GET"])
 def get_students():
@@ -58,7 +59,59 @@ def get_students():
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('students.html', results=results)
+    return render_template('students.html', results=jsonify(results))
+
+
+@app.route("/students", methods=["POST"])
+def add_students():
+    data = request.get_json()
+    firstname = data["firstname"]
+    middlename = data["middlename"]
+    lastname = data["lastname"]
+    birthdate = data["birthdate"]
+    gender = data["gender"]
+    
+    if middlename:
+        query = """INSERT INTO students (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
+        rows = commit(query, firstname, middlename, lastname, birthdate, gender)
+    else:       
+        query = """INSERT INTO students (firstname, lastname, birthdate, gender) VALUES (%s, %s, %s, %s)"""
+        rows = commit(query, firstname, lastname, birthdate, gender)
+ 
+    return make_response(jsonify(
+        {"message": "data created successfully", "rows_affected": rows}
+        ), 201)
+
+@app.route("/students/<int:idstudents>", methods=["PUT"])
+def update_students(idstudents):
+    data = request.get_json()
+    firstname = data["firstname"]
+    middlename = data["middlename"]
+    lastname = data["lastname"]
+    birthdate = data["birthdate"]
+    gender = data["gender"]
+    
+    if middlename:
+        query = """UPDATE students SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
+        rows = commit(query, firstname, middlename, lastname, birthdate, gender, idstudents)
+        
+    else:
+        query = """UPDATE students SET firstname=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
+        rows = commit(query, firstname, lastname, birthdate, gender, idstudents)
+        
+    return make_response(jsonify(
+        {"message": "data updated successfully", "rows_affected": rows}
+        ), 200)
+    
+@app.route("/students/<int:idstudents>", methods=["DELETE"])
+def delete_student(idstudents):
+    query = """DELETE FROM students WHERE idstudents=%s"""
+    rows = commit(query, idstudents)
+        
+    return make_response(jsonify(
+        {"message": "data deleted successfully", "rows_affected": rows}
+        ), 200)   
+    
 
 @app.route("/teachers", methods=["GET"])
 def get_teachers():
@@ -67,7 +120,7 @@ def get_teachers():
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('teachers.html', results=results)
+    return render_template('teachers.html', results=jsonify(results))
 
 @app.route("/classes", methods=["GET"])
 def get_classes():
@@ -89,7 +142,7 @@ def get_classes():
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('classes.html', results=results)
+    return render_template('classes.html', results=jsonify(results))
 
 @app.route("/classes/<int:idclasses>", methods=["GET"])
 def get_class(idclasses):
@@ -119,7 +172,7 @@ def get_class(idclasses):
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('class.html', results=results, cur_class=cur_class)
+    return render_template('class.html', results=jsonify(results), cur_class=cur_class)
 
 
 if __name__ == "__main__":
