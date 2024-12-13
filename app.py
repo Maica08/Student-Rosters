@@ -131,18 +131,14 @@ def get_teachers():
 def add_teachers():
     data = request.get_json()
     firstname = data["firstname"]
-    middlename = data["middlename"]
+    middlename = data.get("middlename")
     lastname = data["lastname"]
     birthdate = data["birthdate"]
     gender = data["gender"]
     
-    if middlename:
-        query = """INSERT INTO teachers (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
-        rows = commit(query, firstname, middlename, lastname, birthdate, gender)
-    else:       
-        query = """INSERT INTO teachers (firstname, lastname, birthdate, gender) VALUES (%s, %s, %s, %s)"""
-        rows = commit(query, firstname, lastname, birthdate, gender)
- 
+    query = """INSERT INTO teachers (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
+    rows = commit(query, firstname, middlename, lastname, birthdate, gender)
+
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
@@ -151,18 +147,13 @@ def add_teachers():
 def update_teachers(idteachers):
     data = request.get_json()
     firstname = data["firstname"]
-    middlename = data["middlename"]
+    middlename = data.get("middlename")
     lastname = data["lastname"]
     birthdate = data["birthdate"]
     gender = data["gender"]
     
-    if middlename:
-        query = """UPDATE teachers SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
-        rows = commit(query, firstname, middlename, lastname, birthdate, gender, idteachers)
-        
-    else:
-        query = """UPDATE teachers SET firstname=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
-        rows = commit(query, firstname, lastname, birthdate, gender, idteachers)
+    query = """UPDATE teachers SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
+    rows = commit(query, firstname, middlename, lastname, birthdate, gender, idteachers)
         
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
@@ -237,7 +228,7 @@ def add_classes():
     description = data["description"]
     idroom = data.get("idroom")  
     idcourse = data.get("idcourse")    
-    query = """INSERT INTO classes (description, idroom, idcourse) VALUES (%s, %s, %s, %s, %s)"""
+    query = """INSERT INTO classes (description, idroom, idcourse) VALUES (%s, %s, %s)"""
     rows = commit(query, description, idroom, idcourse)
     
     return make_response(jsonify(
@@ -251,7 +242,7 @@ def update_classes(idclasses):
     idroom = data.get("idroom")  
     idcourse = data.get("idcourse")    
     
-    query = """UPDATE classes SET description=%s, idroom=%s, idcourse=%s, WHERE idclasses=%s"""
+    query = """UPDATE classes SET description=%s, idroom=%s, idcourse=%s WHERE idclasses=%s"""
     rows = commit(query, description, idroom, idcourse, idclasses)
         
     return make_response(jsonify(
