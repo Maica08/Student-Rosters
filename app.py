@@ -113,6 +113,8 @@ def delete_student(idstudents):
         ), 200)   
     
 
+# Teachers CRUD
+
 @app.route("/teachers", methods=["GET"])
 def get_teachers():
     query = """SELECT * FROM teachers ORDER BY firstname"""
@@ -121,6 +123,58 @@ def get_teachers():
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('teachers.html', results=jsonify(results))
+
+@app.route("/teachers", methods=["POST"])
+def add_teachers():
+    data = request.get_json()
+    firstname = data["firstname"]
+    middlename = data["middlename"]
+    lastname = data["lastname"]
+    birthdate = data["birthdate"]
+    gender = data["gender"]
+    
+    if middlename:
+        query = """INSERT INTO teachers (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
+        rows = commit(query, firstname, middlename, lastname, birthdate, gender)
+    else:       
+        query = """INSERT INTO teachers (firstname, lastname, birthdate, gender) VALUES (%s, %s, %s, %s)"""
+        rows = commit(query, firstname, lastname, birthdate, gender)
+ 
+    return make_response(jsonify(
+        {"message": "data created successfully", "rows_affected": rows}
+        ), 201)
+
+@app.route("/teachers/<int:idteachers>", methods=["PUT"])
+def update_teachers(idteachers):
+    data = request.get_json()
+    firstname = data["firstname"]
+    middlename = data["middlename"]
+    lastname = data["lastname"]
+    birthdate = data["birthdate"]
+    gender = data["gender"]
+    
+    if middlename:
+        query = """UPDATE teachers SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
+        rows = commit(query, firstname, middlename, lastname, birthdate, gender, idteachers)
+        
+    else:
+        query = """UPDATE teachers SET firstname=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
+        rows = commit(query, firstname, lastname, birthdate, gender, idteachers)
+        
+    return make_response(jsonify(
+        {"message": "data updated successfully", "rows_affected": rows}
+        ), 200)
+    
+@app.route("/teachers/<int:idteachers>", methods=["DELETE"])
+def delete_teacher(idteachers):
+    query = """DELETE FROM teachers WHERE idteachers=%s"""
+    rows = commit(query, idteachers)
+        
+    return make_response(jsonify(
+        {"message": "data deleted successfully", "rows_affected": rows}
+        ), 200)   
+
+# Classes CRUD
 
 @app.route("/classes", methods=["GET"])
 def get_classes():
@@ -173,6 +227,43 @@ def get_class(idclasses):
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('class.html', results=jsonify(results), cur_class=cur_class)
+
+@app.route("/classes", methods=["POST"])
+def add_classes():
+    data = request.get_json()
+    description = data["description"]
+    idroom = data.get("idroom")  
+    idcourse = data.get("idcourse")    
+    query = """INSERT INTO classes (description, idroom, idcourse) VALUES (%s, %s, %s, %s, %s)"""
+    rows = commit(query, description, idroom, idcourse)
+    
+    return make_response(jsonify(
+        {"message": "data created successfully", "rows_affected": rows}
+        ), 201)
+
+@app.route("/classes/<int:idclasses>", methods=["PUT"])
+def update_classes(idclasses):
+    data = request.get_json()
+    description = data["description"]
+    idroom = data.get("idroom")  
+    idcourse = data.get("idcourse")    
+    
+    query = """UPDATE classes SET description=%s, idroom=%s, idcourse=%s, WHERE idclasses=%s"""
+    rows = commit(query, description, idroom, idcourse, idclasses)
+        
+    return make_response(jsonify(
+        {"message": "data updated successfully", "rows_affected": rows}
+        ), 200)
+    
+@app.route("/classes/<int:idclasses>", methods=["DELETE"])
+def delete_classe(idclasses):
+    query = """DELETE FROM classes WHERE idclasses=%s"""
+    rows = commit(query, idclasses)
+        
+    return make_response(jsonify(
+        {"message": "data deleted successfully", "rows_affected": rows}
+        ), 200)   
+    
 
 
 if __name__ == "__main__":
