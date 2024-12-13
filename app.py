@@ -91,61 +91,44 @@ def get_students():
     query = """SELECT * FROM students ORDER BY firstname"""
     results = execute_template(query)
     
-    if not results:
-        return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('students.html', results=results)
+    if isinstance(results, make_response):
+        return results
+    return render_template('index.html', results=results)
 
 @app.route("/api/students", methods=["GET"])
 def get_students_api():
-    query = """SELECT * FROM students """
+    query = "SELECT * FROM students"
     results = execute_json(query)
-    
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
     return make_response(jsonify(results), 200)
 
 @app.route("/api/students", methods=["POST"])
 def add_students():
-    data = request.get_json()
-    firstname = data["firstname"]
-    middlename = data.get("middlename")
-    lastname = data["lastname"]
-    birthdate = data["birthdate"]
-    gender = data["gender"]
-    
+    data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])
     query = """INSERT INTO students (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
-    rows = commit(query, firstname, middlename, lastname, birthdate, gender)
-
-    return make_response(jsonify(
-        {"message": "data created successfully", "rows_affected": rows}
-        ), 201)
+    rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"])
+    if isinstance(rows, make_response):
+        return rows
+    return make_response(jsonify({"message": "data created successfully", "rows_affected": rows}), 201)
 
 @app.route("/api/students/<int:idstudents>", methods=["PUT"])
 def update_students(idstudents):
-    data = request.get_json()
-    firstname = data["firstname"]
-    middlename = data.get("middlename")
-    lastname = data["lastname"]
-    birthdate = data["birthdate"]
-    gender = data["gender"]
-    
+    data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])
     query = """UPDATE students SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
-    rows = commit(query, firstname, middlename, lastname, birthdate, gender, idstudents)
-                
-    return make_response(jsonify(
-        {"message": "data updated successfully", "rows_affected": rows}
-        ), 200)
-    
-@app.route("/students/<int:idstudents>", methods=["DELETE"])
-def delete_student(idstudents):
-    query = """DELETE FROM students WHERE idstudents=%s"""
-    rows = commit(query, idstudents)
-        
-    return make_response(jsonify(
-        {"message": "data deleted successfully", "rows_affected": rows}
-        ), 200)   
-    
+    rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"], idstudents)
+    if isinstance(rows, make_response):
+        return rows
+    return make_response(jsonify({"message": "data updated successfully", "rows_affected": rows}), 200)
 
+@app.route("/api/students/<int:idstudents>", methods=["DELETE"])
+def delete_student(idstudents):
+    query = "DELETE FROM students WHERE idstudents=%s"
+    rows = commit(query, idstudents)
+    if isinstance(rows, make_response):
+        return rows
+    return make_response(jsonify({"message": "data deleted successfully", "rows_affected": rows}), 200)
+    
 # Teachers CRUD
 
 @app.route("/teachers", methods=["GET"])
@@ -161,39 +144,30 @@ def get_teachers():
 def get_teachers_api():
     query = """SELECT * FROM teachers """
     results = execute_json(query)
-    
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
     return make_response(jsonify(results), 200)
 
 @app.route("/api/teachers", methods=["POST"])
 def add_teachers():
-    data = request.get_json()
-    firstname = data["firstname"]
-    middlename = data.get("middlename")
-    lastname = data["lastname"]
-    birthdate = data["birthdate"]
-    gender = data["gender"]
-    
+    data = validate_request_data(["firstname, lastname, birthdate, gender"])    
     query = """INSERT INTO teachers (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
-    rows = commit(query, firstname, middlename, lastname, birthdate, gender)
-
+    rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"])
+    
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
 @app.route("/api/teachers/<int:idteachers>", methods=["PUT"])
 def update_teachers(idteachers):
-    data = request.get_json()
-    firstname = data["firstname"]
-    middlename = data.get("middlename")
-    lastname = data["lastname"]
-    birthdate = data["birthdate"]
-    gender = data["gender"]
-    
+    data = validate_request_data(["firstname, lastname, birthdate, gender"])
     query = """UPDATE teachers SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
-    rows = commit(query, firstname, middlename, lastname, birthdate, gender, idteachers)
+    rows = commit(query, data["firstname"], data.get("middlename"), data["lastname"], data["birthdate"], data["gender"], idteachers)
         
+    if isinstance(rows, make_response):
+        return rows    
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -202,7 +176,9 @@ def update_teachers(idteachers):
 def delete_teacher(idteachers):
     query = """DELETE FROM teachers WHERE idteachers=%s"""
     rows = commit(query, idteachers)
-        
+    
+    if isinstance(rows, make_response):
+        return rows    
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
@@ -227,13 +203,13 @@ def get_classes():
     """
     results = execute_template(query)
     
-    if not results:
-        return make_response(jsonify({"message": "data not found"}), 404)
+    if isinstance(results, make_response):
+        return results
     return render_template('classes.html', results=results)
 
 @app.route("/api/classes", methods=["GET"])
 def get_classes_api():
-    query = """SELECT * FROM classes """
+    query = """SELECT * FROM classes"""
     results = execute_json(query)
     
     if not results:
@@ -266,32 +242,30 @@ def get_class(idclasses):
     """
     cur_class = execute_template(query1, idclasses)
     
-    if not results:
-        return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('class.html', results=jsonify(results), cur_class=cur_class)
+    if isinstance((results, cur_class), make_response):
+        return results
+    return render_template('class.html', results=results, cur_class=cur_class)
 
 @app.route("/api/classes", methods=["POST"])
 def add_classes():
-    data = request.get_json()
-    description = data["description"]
-    idroom = data.get("idroom")  
-    idcourse = data.get("idcourse")    
+    data = validate_request_data(["description"])
     query = """INSERT INTO classes (description, idroom, idcourse) VALUES (%s, %s, %s)"""
-    rows = commit(query, description, idroom, idcourse)
+    rows = commit(query, data["description"], data.get("idroom"), data.get("idcourse"))
     
+    if isinstance(rows, make_response):
+        return rows    
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
 @app.route("/api/classes/<int:idclasses>", methods=["PUT"])
 def update_classes(idclasses):
-    data = request.get_json()
-    description = data["description"]
-    idroom = data.get("idroom")  
-    idcourse = data.get("idcourse")    
-    
+    data = validate_request_data(["description"])
     query = """UPDATE classes SET description=%s, idroom=%s, idcourse=%s WHERE idclasses=%s"""
-    rows = commit(query, description, idroom, idcourse, idclasses)
+    rows = commit(query, data["description"], data.get("idroom"), data.get("idcourse"), idclasses)
+    
+    if isinstance(rows, make_response):
+        return rows    
         
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
@@ -301,7 +275,9 @@ def update_classes(idclasses):
 def delete_class(idclasses):
     query = """DELETE FROM classes WHERE idclasses=%s"""
     rows = commit(query, idclasses)
-        
+    
+    if isinstance(rows, make_response):
+        return rows            
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
@@ -321,40 +297,38 @@ def get_rooms():
     """
     results = execute_template(query)
     
-    if not results:
-        return make_response(jsonify({"message": "data not found"}), 404)
+    if isinstance(results, make_response):
+        return results
     return render_template('rooms.html', results=results)
 
 @app.route("/api/rooms", methods=["GET"])
 def get_rooms_api():
     query = """SELECT * FROM rooms """
     results = execute_json(query)
-    
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
     return make_response(jsonify(results), 200)
 
 @app.route("/api/rooms", methods=["POST"])
 def add_rooms():
-    data = request.get_json()
-    location = data["location"]
-    description = data.get("description")
+    data = validate_request_data(["location"])
     query = """INSERT INTO rooms (location, description) VALUES (%s, %s)"""
-    rows = commit(query, location, description)
+    rows = commit(query, data["location"], data.get("description"))
     
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
 @app.route("/api/rooms/<int:idrooms>", methods=["PUT"])
 def update_rooms(idrooms):
-    data = request.get_json()
-    location = data["location"]
-    description = data.get("description")
-    
+    data = validate_request_data(["location"])
     query = """UPDATE rooms SET location=%s, description=%s WHERE idrooms=%s"""
-    rows = commit(query, location, description, idrooms)
+    rows = commit(query, data["location"], data.get("description"), idrooms)
         
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -363,7 +337,9 @@ def update_rooms(idrooms):
 def delete_room(idrooms):
     query = """DELETE FROM rooms WHERE idrooms=%s"""
     rows = commit(query, idrooms)
-        
+    
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
@@ -382,8 +358,8 @@ def get_courses():
     """
     results = execute_template(query)
     
-    if not results:
-        return make_response(jsonify({"message": "data not found"}), 404)
+    if isinstance(results, make_response):
+        return results
     return render_template('courses.html', results=results)
 
 @app.route("/api/courses", methods=["GET"])
@@ -397,25 +373,24 @@ def get_courses_api():
 
 @app.route("/api/courses", methods=["POST"])
 def add_courses():
-    data = request.get_json()
-    name = data["name"]
-    code = data["code"]
+    data = validate_request_data(["name", "code"])
     query = """INSERT INTO courses (name, code) VALUES (%s, %s)"""
-    rows = commit(query, name, code)
+    rows = commit(query, data["name"], data["code"])
     
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
 @app.route("/api/courses/<int:idcourses>", methods=["PUT"])
 def update_courses(idcourses):
-    data = request.get_json()
-    name = data["name"]
-    code = data["code"]
-    
+    data = validate_request_data(["name", "code"])
     query = """UPDATE courses SET name=%s, code=%s WHERE idcourses=%s"""
-    rows = commit(query, name, code, idcourses)
+    rows = commit(query, data["name"], data["code"], idcourses)
         
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -425,6 +400,8 @@ def delete_course(idcourses):
     query = """DELETE FROM courses WHERE idcourses=%s"""
     rows = commit(query, idcourses)
         
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
@@ -448,8 +425,8 @@ def get_roster():
                 """
     results = execute_template(query)
     
-    if not results:
-        return make_response(jsonify({"message": "data not found"}), 404)
+    if isinstance(results, make_response):
+        return results
     return render_template('roster.html', results=results)
 
 @app.route("/api/roster", methods=["GET"])
@@ -463,30 +440,24 @@ def get_roster_api():
 
 @app.route("/api/roster", methods=["POST"])
 def add_roster():
-    data = request.get_json()
-    idclass = data.get("idclass")
-    idstudent = data.get("idstudent")
-    idteacher = data.get("idteacher")
-    class_period = data["class_period"]
-    
+    data = validate_request_data(["class_period"])
     query = """INSERT INTO roster (idclass, idstudent, idteacher, class_period) VALUES (%s, %s, %s, %s)"""
-    rows = commit(query, idclass, idstudent, idteacher, class_period)
-
+    rows = commit(query, data.get("idclass"), data.get("idstudent"), data.get("idteacher"), data["class_period"])
+    
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
 
 @app.route("/api/roster/<int:idroster>", methods=["PUT"])
 def update_roster(idroster):
-    data = request.get_json()
-    idclass = data.get("idclass")
-    idstudent = data.get("idstudent")
-    idteacher = data.get("idteacher")
-    class_period = data["class_period"]
-    
+    data = validate_request_data(["class_period"])
     query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s WHERE idroster=%s"""
-    rows = commit(query, idclass, idstudent, idteacher, class_period, idroster)
+    rows = commit(query, data.get("idclass"), data.get("idstudent"), data.get("idteacher"), data["class_period"], idroster)
         
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
@@ -496,10 +467,13 @@ def delete_roster(idroster):
     query = """DELETE FROM roster WHERE idroster=%s"""
     rows = commit(query, idroster)
         
+    if isinstance(rows, make_response):
+        return rows
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
     
+# API Page
     
 @app.route("/api")
 def api():
