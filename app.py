@@ -34,8 +34,8 @@ def execute_template(query, *args):
 def commit(query, *args):
    cur = mysql.connection.cursor()
    cur.execute(query, tuple(args))
-   cur.commit()
-   rows_affected = cur.row_count()
+   mysql.connection.commit()
+   rows_affected = cur.rowcount
    cur.close()
    
    return rows_affected
@@ -78,18 +78,14 @@ def get_students():
 def add_students():
     data = request.get_json()
     firstname = data["firstname"]
-    middlename = data["middlename"]
+    middlename = data.get("middlename")
     lastname = data["lastname"]
     birthdate = data["birthdate"]
     gender = data["gender"]
     
-    if middlename:
-        query = """INSERT INTO students (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
-        rows = commit(query, firstname, middlename, lastname, birthdate, gender)
-    else:       
-        query = """INSERT INTO students (firstname, lastname, birthdate, gender) VALUES (%s, %s, %s, %s)"""
-        rows = commit(query, firstname, lastname, birthdate, gender)
- 
+    query = """INSERT INTO students (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
+    rows = commit(query, firstname, middlename, lastname, birthdate, gender)
+
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
@@ -98,19 +94,14 @@ def add_students():
 def update_students(idstudents):
     data = request.get_json()
     firstname = data["firstname"]
-    middlename = data["middlename"]
+    middlename = data.get("middlename")
     lastname = data["lastname"]
     birthdate = data["birthdate"]
     gender = data["gender"]
     
-    if middlename:
-        query = """UPDATE students SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
-        rows = commit(query, firstname, middlename, lastname, birthdate, gender, idstudents)
-        
-    else:
-        query = """UPDATE students SET firstname=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
-        rows = commit(query, firstname, lastname, birthdate, gender, idstudents)
-        
+    query = """UPDATE students SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
+    rows = commit(query, firstname, middlename, lastname, birthdate, gender, idstudents)
+                
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
