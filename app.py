@@ -8,13 +8,25 @@ app.config["MYSQL_PASSWORD"] = ""
 app.config["MYSQL_DB"] = "student_roster_db"
 mysql = MySQL(app)
 
-def execute(query, *args):
+def execute_json(query, *args):
     cur = mysql.connection.cursor()
     if args:
         cur.execute(query, tuple(args))
     else:
         cur.execute(query)
     data = cur.fetchall()
+    cur.close()
+    
+    return data
+
+def execute_template(query, *args):
+    cur = mysql.connection.cursor()
+    if args:
+        cur.execute(query, tuple(args))
+    else:
+        cur.execute(query)
+    columns = [col[0] for col in cur.description]
+    data = [dict(zip(columns, row)) for row in cur.fetchall()]
     cur.close()
     
     return data
@@ -47,19 +59,19 @@ def home():
         ORDER BY classes.description;
     """
     
-    results = execute(query)
-    return render_template('index.html', results=jsonify(results))
+    results = execute_template(query)
+    return render_template('index.html', results=results)
 
 # Students CRUD
 
 @app.route("/students", methods=["GET"])
 def get_students():
     query = """SELECT * FROM students ORDER BY firstname"""
-    results = execute(query)
+    results = execute_template(query)
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('students.html', results=jsonify(results))
+    return render_template('students.html', results=results)
 
 
 @app.route("/students", methods=["POST"])
@@ -118,11 +130,11 @@ def delete_student(idstudents):
 @app.route("/teachers", methods=["GET"])
 def get_teachers():
     query = """SELECT * FROM teachers ORDER BY firstname"""
-    results = execute(query)
+    results = execute_template(query)
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('teachers.html', results=jsonify(results))
+    return render_template('teachers.html', results=results)
 
 @app.route("/teachers", methods=["POST"])
 def add_teachers():
@@ -192,11 +204,11 @@ def get_classes():
     ON idcourses = idcourse
     ORDER BY classes.description
     """
-    results = execute(query)
+    results = execute_template(query)
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
-    return render_template('classes.html', results=jsonify(results))
+    return render_template('classes.html', results=results)
 
 @app.route("/classes/<int:idclasses>", methods=["GET"])
 def get_class(idclasses):
@@ -213,7 +225,7 @@ def get_class(idclasses):
     WHERE idclasses = %s
     ORDER BY students.firstname
     """
-    results = execute(query, idclasses)
+    results = execute_template(query, idclasses)
     
     query1 = """
         SELECT 
@@ -222,7 +234,7 @@ def get_class(idclasses):
         FROM classes
         WHERE idclasses = %s
     """
-    cur_class = execute(query1, idclasses)
+    cur_class = execute_template(query1, idclasses)
     
     if not results:
         return make_response(jsonify({"message": "data not found"}), 404)
@@ -263,8 +275,6 @@ def delete_classe(idclasses):
     return make_response(jsonify(
         {"message": "data deleted successfully", "rows_affected": rows}
         ), 200)   
-    
-
 
 if __name__ == "__main__":
     app.run(debug=True)
