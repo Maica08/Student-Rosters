@@ -480,7 +480,7 @@ def add_roster():
 @role_required(["admin"])
 def update_roster(idroster):
     data = validate_request_data(["class_period"])
-    query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s WHERE idroster=%s"""
+    query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s, class_period=%s WHERE idroster=%s"""
     rows = commit(query, data.get("idclass"), data.get("idstudent"), data.get("idteacher"), data["class_period"], idroster)
         
     if isinstance(rows, Flask.response_class):
