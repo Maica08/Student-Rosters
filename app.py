@@ -257,7 +257,6 @@ def get_class(idclasses):
     cur_class = execute_template(query1, idclasses)
     
     if not results:
-        # return make_response(jsonify({"message": "data not found"}), 404)
         results=False
     return render_template('class.html', results=results, cur_class=cur_class)
 
