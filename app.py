@@ -97,10 +97,9 @@ def get_students():
     query = """SELECT * FROM students ORDER BY firstname"""
     results = execute_template(query)
     
-    if isinstance(results, Flask.response_class):
-        return results
-
-    return render_template('index.html', results=results)
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
+    return render_template('students.html', results=results)
 
 @app.route("/api/students", methods=["GET"])
 @role_required(["admin", "teacher"])
@@ -218,7 +217,7 @@ def get_classes():
     """
     results = execute_template(query)
     
-    if isinstance(results, make_response):
+    if not results:
         return results
     return render_template('classes.html', results=results)
 
@@ -315,7 +314,7 @@ def get_rooms():
     """
     results = execute_template(query)
     
-    if isinstance(results, make_response):
+    if not results:
         return results
     return render_template('rooms.html', results=results)
 
@@ -380,7 +379,7 @@ def get_courses():
     """
     results = execute_template(query)
     
-    if isinstance(results, make_response):
+    if not results:
         return results
     return render_template('courses.html', results=results)
 
