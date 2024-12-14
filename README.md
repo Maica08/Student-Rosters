@@ -55,6 +55,7 @@ To set_up for the database:
 | /api/rosters| POST     | Add rosters|
 | /api/rosters/<int: idrosters>| PUT     | Update roster|
 | /api/rosters/<int: idrosters>| DELETE     | Delete roster|
+| /auth/login| POST     | User Authorization Log In|
 
 ## Testing
  For testing app.py
