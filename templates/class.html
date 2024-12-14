@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Teachers{% endblock %}
+{% block title %}Class{% endblock %}
 
 {% block content %}
 <div class="flex flex-col w-full h-fit mt-[10rem] mb-10 flex items-center">
@@ -8,8 +8,8 @@
     <div class="w-3/4 text-3xl font-semibold mb-3">Students in {{ class['class description'] }}</div>
     {% endfor %}    
 
-    <table class="w-3/4 border border-gray-500 text-xl">
-        <thead>
+    <table class="w-1/2 border border-gray-500 text-xl">
+        <thead class="bg-blue-500 text-white">
             <th class="font-bold text-center">
                 Student Name
             </th>

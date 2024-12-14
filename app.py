@@ -19,7 +19,7 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 def execute_json(query, *args):
     cur = mysql.connection.cursor()
     try:
-        cur.execute(query, args if args else ())
+        cur.execute(query, *args if args else ())
         data = cur.fetchall()
     except Exception as e:
         return make_response(jsonify({"error": "Database error", "message": str(e)}), 500)
@@ -230,7 +230,7 @@ def get_classes_api():
         return make_response(jsonify({"message": "data not found"}), 404)
     return make_response(jsonify(results), 200)
 
-@app.route("/api/classes/<int:idclasses>", methods=["GET"])
+@app.route("/classes/<int:idclasses>", methods=["GET"])
 def get_class(idclasses):
     query = """
     SELECT 
@@ -256,8 +256,8 @@ def get_class(idclasses):
     """
     cur_class = execute_template(query1, idclasses)
     
-    if isinstance((results, cur_class), make_response):
-        return results
+    if not results:
+        return make_response(jsonify({"message": "data not found"}), 404)
     return render_template('class.html', results=results, cur_class=cur_class)
 
 @app.route("/api/classes", methods=["POST"])

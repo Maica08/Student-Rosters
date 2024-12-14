@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="w-full h-fit mt-[10rem] mb-10 flex justify-center">
-    <table class="w-3/4 border border-gray-500 text-xl">
-        <thead>
+    <table class="w-1/2 border border-gray-500 text-xl">
+        <thead class="bg-blue-500 text-white">
             <th class="font-bold text-center">
                 Location
             </th>
@@ -16,10 +16,6 @@
         {% for result in results %}
         <tr class="hover:bg-gray-200 ">
             <td class="border-t border-t-gray-500 text-center relative">
-                <div class="absolute flex -left-12 w-10 h-fit py-1 gap-1">
-                    <i class="fa-solid fa-pen-to-square text-gray-400 z-10"></i>
-                    <i class="fa-solid fa-trash text-gray-400 z-10"></i>
-                </div>                
                 {{ result['location'] }}
             </td>
             <td class="border-t border-t-gray-500 text-center">{{ result['description'] }}</td>

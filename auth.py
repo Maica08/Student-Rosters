@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from functools import wraps
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from datetime import timedelta
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -45,7 +46,7 @@ def login():
     if not user or user["password"] != password:
         return jsonify({"error": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=username, additional_claims={"role": user["role"]})
+    access_token = create_access_token(identity=username, additional_claims={"role": user["role"]}, expires_delta=timedelta(hours=8))
     return jsonify({"access_token": access_token}), 200
 
 @auth_bp.route("/protected", methods=["GET"])
