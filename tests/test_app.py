@@ -140,7 +140,46 @@ def test_get_students_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+    
+@patch('app.mysql.connection')
+def test_forbidden_access(mock_connection, client):
+    token = generate_token('student')  
+    response = client.post(
+        '/api/students',
+        json={
+            'firstname': 'Jane',
+            'middlename': 'Kelly',
+            'lastname': 'Smith',
+            'birthdate': '1999-12-31',
+            'gender': 'F'
+        },
+        headers={'Authorization': f'Bearer {token}'}
+    )
 
+    assert response.status_code == 403
+    assert response.is_json
+    data = response.get_json()
+    assert data['error'] == 'Access forbidden: Insufficient role'
+
+def test_unauthorized_access_students(client):
+    response = client.get('/api/students')
+
+    assert response.status_code == 401
+    assert response.is_json
+    data = response.get_json()
+
+def test_invalid_token_students(client):
+    response = client.get('/api/students', headers={'Authorization': 'Bearer invalid_token'})
+
+    assert response.status_code == 422
+    assert response.is_json
+    data = response.get_json()
+
+def test_get_students_html(client):
+    with patch('app.execute_template', return_value=[]):
+        response = client.get('/students')
+        assert response.status_code == 404
+        assert b"data not found" in response.data 
 
 # Test for teachers
 @patch('app.mysql.connection')
@@ -260,6 +299,26 @@ def test_get_teachers_no_data(mock_connection, client):
     assert 'message' in data
     assert data['message'] == 'data not found'
     
+def test_unauthorized_access_teachers(client):
+    response = client.get('/api/teachers')
+
+    assert response.status_code == 401
+    assert response.is_json
+    data = response.get_json()
+
+def test_invalid_token_teachers(client):
+    response = client.get('/api/teachers', headers={'Authorization': 'Bearer invalid_token'})
+
+    assert response.status_code == 422
+    assert response.is_json
+    data = response.get_json()
+
+def test_get_teachers_html(client):
+    with patch('app.execute_template', return_value=[]):
+        response = client.get('/teachers')
+        assert response.status_code == 404
+        assert b"data not found" in response.data 
+    
 # Test for classes
 @patch('app.mysql.connection')
 def test_get_classes_api(mock_connection, client):
@@ -374,6 +433,12 @@ def test_get_classes_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+    
+
+def test_get_classes_html(client):
+    with patch('app.execute_template', return_value=[]):
+        response = client.get('/classes')
+        assert response.status_code == 200
 
 
 # Test for rooms
@@ -487,6 +552,12 @@ def test_get_rooms_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+    
+def test_get_rooms_html(client):
+    with patch('app.execute_template', return_value=[]):
+        response = client.get('/rooms')
+        assert response.status_code == 200
+
 
 # Test for courses
 @patch('app.mysql.connection')
@@ -530,6 +601,7 @@ def test_add_courses(mock_connection, client):
     data = response.get_json()
     assert data['message'] == 'data created successfully'
     assert data['rows_affected'] == 1
+    
 
 @patch('app.mysql.connection')
 def test_update_courses(mock_connection, client):
@@ -599,6 +671,12 @@ def test_get_courses_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+    
+def test_get_courses_html(client):
+    with patch('app.execute_template', return_value=[]):
+        response = client.get('/courses')
+        assert response.status_code == 200
+
 
 # Test for roster
 @patch('app.mysql.connection')
@@ -717,3 +795,9 @@ def test_get_roster_no_data(mock_connection, client):
     data = response.get_json()
     assert 'message' in data
     assert data['message'] == 'data not found'
+    
+def test_get_roster_html(client):
+    with patch('app.execute_template', return_value=[]):
+        response = client.get('/roster')
+        assert response.status_code == 200
+        

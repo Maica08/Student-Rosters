@@ -83,19 +83,17 @@ def test_protected_with_valid_token(mock_get_jwt_identity, mock_jwt_required, cl
     data = response.get_json()
     assert data["message"] == "Welcome, admin!"
 
-# @patch('flask_jwt_extended.jwt_required')
-# @patch('flask_jwt_extended.get_jwt_identity')
-# def test_protected_with_invalid_token(mock_get_jwt_identity, mock_jwt_required, client):
-#     mock_jwt_required.side_effect = JWTDecodeError("Token is invalid")
+@patch('flask_jwt_extended.jwt_required')
+@patch('flask_jwt_extended.get_jwt_identity')
+def test_protected_with_invalid_token(mock_get_jwt_identity, mock_jwt_required, client):
+    response = client.get('/auth/protected', headers={
+        "Authorization": "Bearer invalid_token"
+    })
     
-#     response = client.get('/auth/protected', headers={
-#         "Authorization": "Bearer invalid_token"
-#     })
+    assert response.status_code == 422
     
-#     assert response.status_code == 422
-    
-#     data = response.get_json()
-#     assert data["msg"] == "Token is invalid"
+    data = response.get_json()
+    assert data["msg"] == "Not enough segments"
     
 @patch('flask_jwt_extended.jwt_required')
 @patch('flask_jwt_extended.get_jwt_identity')

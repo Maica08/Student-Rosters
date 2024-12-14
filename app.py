@@ -449,7 +449,7 @@ def get_roster():
                 """
     results = execute_template(query)
     
-    if isinstance(results, make_response):
+    if not results:
         return results
     return render_template('roster.html', results=results)
 
