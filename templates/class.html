@@ -10,15 +10,25 @@
 
     <table class="w-1/2 border border-gray-500 text-xl">
         <thead class="bg-blue-500 text-white">
-            <th class="font-bold text-center">
-                Student Name
-            </th>
+            <tr>
+                <th class="font-bold text-center">
+                    Student Name
+                </th>
+            </tr>
         </thead>
-        {% for result in results %}
+        <tbody>
+            {% if not results %}
+            <tr class="hover:bg-gray-200">
+                <td class="border-t border-t-gray-500 text-center">No students in this class</td>
+            </tr>
+            {% else %}
+            {% for result in results %}
             <tr class="hover:bg-gray-200">
                 <td class="border-t border-t-gray-500 text-center">{{ result['student'] }}</td>
             </tr>
-        {% endfor %}    
+            {% endfor %}
+            {% endif %}
+        </tbody>
     </table>
 </div>
 {% endblock %}
