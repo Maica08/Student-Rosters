@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from flask import Flask
+from flask_jwt_extended import create_access_token
 from app import app
 
 @pytest.fixture
@@ -10,12 +11,18 @@ def client():
     app.config['MYSQL_USER'] = 'mock_user'
     app.config['MYSQL_PASSWORD'] = 'mock_password'
     app.config['MYSQL_DB'] = 'mock_db'
+    app.config['JWT_SECRET_KEY'] = "auth_key_1001"  
 
     with patch('app.mysql') as mock_mysql:
         mock_connection = MagicMock()
         mock_mysql.connection = mock_connection
         yield app.test_client()
-        
+
+def generate_token(role):
+    """Helper function to generate a JWT token with the specified role."""
+    with app.app_context():
+        return create_access_token(identity='test_user', additional_claims={'role': role})
+
 # Test for students
 @patch('app.mysql.connection')
 def test_get_students_api(mock_connection, client):
@@ -28,7 +35,8 @@ def test_get_students_api(mock_connection, client):
         ('idstudents',), ('firstname',), ('lastname',), ('birthdate',), ('gender',)
     )
 
-    response = client.get('/api/students')
+    token = generate_token('admin') 
+    response = client.get('/api/students', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert response.is_json
     data = response.get_json()
@@ -42,7 +50,7 @@ def test_add_students(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
-
+    token = generate_token('admin') 
     response = client.post(
         '/api/students',
         json={
@@ -51,7 +59,8 @@ def test_add_students(mock_connection, client):
             'lastname': 'Smith',
             'birthdate': '1999-12-31',
             'gender': 'F'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 201
@@ -66,6 +75,7 @@ def test_update_students(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
+    token = generate_token('admin') 
     response = client.put(
         '/api/students/1',
         json={
@@ -73,7 +83,8 @@ def test_update_students(mock_connection, client):
             'lastname': 'Doe',
             'birthdate': '1995-06-15',
             'gender': 'Female'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 200
@@ -87,8 +98,9 @@ def test_delete_student(mock_connection, client):
     mock_cursor = MagicMock()
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
+    token = generate_token('admin') 
 
-    response = client.delete('/api/students/1')
+    response = client.delete('/api/students/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
     assert response.is_json
@@ -98,12 +110,14 @@ def test_delete_student(mock_connection, client):
     
 @patch('app.mysql.connection')
 def test_add_students_missing_fields(mock_connection, client):
+    token = generate_token('admin') 
     response = client.post(
         '/api/students',
         json={
             'firstname': 'Jane',
             'lastname': 'Smith'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 400
@@ -117,8 +131,9 @@ def test_get_students_no_data(mock_connection, client):
     mock_cursor = MagicMock()
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.fetchall.return_value = []
+    token = generate_token('admin') 
 
-    response = client.get('/api/students')
+    response = client.get('/api/students', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 404
     assert response.is_json
@@ -139,7 +154,8 @@ def test_get_teachers_api(mock_connection, client):
         ('idteachers',), ('firstname',), ('lastname',), ('birthdate',), ('gender',)
     )
 
-    response = client.get('/api/teachers')
+    token = generate_token('admin') 
+    response = client.get('/api/teachers', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert response.is_json
     data = response.get_json()
@@ -153,7 +169,7 @@ def test_add_teachers(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
-
+    token = generate_token('admin') 
     response = client.post(
         '/api/students',
         json={
@@ -162,7 +178,8 @@ def test_add_teachers(mock_connection, client):
             'lastname': 'Smith',
             'birthdate': '1999-12-31',
             'gender': 'Female'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 201
@@ -177,6 +194,7 @@ def test_update_teachers(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
+    token = generate_token('admin') 
     response = client.put(
         '/api/teachers/1',
         json={
@@ -184,7 +202,8 @@ def test_update_teachers(mock_connection, client):
             'lastname': 'Doer',
             'birthdate': '1990-06-10',
             'gender': 'Male'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 200
@@ -199,7 +218,8 @@ def test_delete_teacher(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
 
-    response = client.delete('/api/teachers/1')
+    token = generate_token('admin') 
+    response = client.delete('/api/teachers/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
     assert response.is_json
@@ -209,12 +229,14 @@ def test_delete_teacher(mock_connection, client):
     
 @patch('app.mysql.connection')
 def test_add_teachers_missing_fields(mock_connection, client):
+    token = generate_token('admin') 
     response = client.post(
         '/api/teachers',
         json={
             'firstname': 'Roy',
             'lastname': 'Smith'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 400
@@ -229,7 +251,8 @@ def test_get_teachers_no_data(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.fetchall.return_value = []
 
-    response = client.get('/api/teachers')
+    token = generate_token('admin') 
+    response = client.get('/api/teachers', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 404
     assert response.is_json
@@ -249,7 +272,8 @@ def test_get_classes_api(mock_connection, client):
         ('idclasses',), ('description',), ('idroom',), ('idcourse',)
     )
 
-    response = client.get('/api/classes')
+    token = generate_token('admin') 
+    response = client.get('/api/classes', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert response.is_json
     data = response.get_json()
@@ -263,14 +287,15 @@ def test_add_classes(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
-
+    token = generate_token('admin') 
     response = client.post(
         '/api/classes',
         json={
             'description': 'Basic Calculus',
             'idroom': 1,
             'idcourse': 26
-        }
+        }, 
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 201
@@ -285,13 +310,15 @@ def test_update_classes(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
+    token = generate_token('admin')
     response = client.put(
         '/api/classes/1',
         json={
             'description': 'Math in the Modern World',
             'idroom': 1,
             'idcourse': 25
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 200
@@ -306,7 +333,8 @@ def test_delete_class(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
 
-    response = client.delete('/api/classes/1')
+    token = generate_token('admin')
+    response = client.delete('/api/classes/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
     assert response.is_json
@@ -316,12 +344,14 @@ def test_delete_class(mock_connection, client):
     
 @patch('app.mysql.connection')
 def test_add_classes_missing_fields(mock_connection, client):
+    token = generate_token('admin')
     response = client.post(
         '/api/classes',
         json={
             'idroom': 1,
             'idcourse': 25
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 400
@@ -336,7 +366,8 @@ def test_get_classes_no_data(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.fetchall.return_value = []
 
-    response = client.get('/api/classes')
+    token = generate_token('admin')
+    response = client.get('/api/classes', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 404
     assert response.is_json
@@ -357,7 +388,8 @@ def test_get_rooms_api(mock_connection, client):
         ('idrooms',), ('location',), ('description',), ('idcourse',)
     )
 
-    response = client.get('/api/rooms')
+    token = generate_token('admin')
+    response = client.get('/api/rooms', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert response.is_json
     data = response.get_json()
@@ -371,13 +403,14 @@ def test_add_rooms(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
-
+    token = generate_token('admin')
     response = client.post(
         '/api/rooms',
         json={
             'location': 'Main Building, Room 1',
             'description': 'Meeting room'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 201
@@ -392,12 +425,14 @@ def test_update_rooms(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
+    token = generate_token('admin')
     response = client.put(
         '/api/rooms/1',
         json={
             'location': 'New Building, Room 2',
             'description': 'Grand hall'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 200
@@ -412,7 +447,8 @@ def test_delete_room(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
 
-    response = client.delete('/api/rooms/1')
+    token = generate_token('admin')
+    response = client.delete('/api/rooms/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
     assert response.is_json
@@ -422,11 +458,13 @@ def test_delete_room(mock_connection, client):
     
 @patch('app.mysql.connection')
 def test_add_rooms_missing_fields(mock_connection, client):
+    token = generate_token('admin')
     response = client.post(
         '/api/rooms',
         json={
             'description': 'Grand hall'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 400
@@ -441,7 +479,8 @@ def test_get_rooms_no_data(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.fetchall.return_value = []
 
-    response = client.get('/api/rooms')
+    token = generate_token('admin')
+    response = client.get('/api/rooms', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 404
     assert response.is_json
@@ -461,7 +500,8 @@ def test_get_courses_api(mock_connection, client):
         ('idcourses',), ('name',), ('code',)
     )
 
-    response = client.get('/api/courses')
+    token = generate_token('admin')
+    response = client.get('/api/courses', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert response.is_json
     data = response.get_json()
@@ -475,13 +515,14 @@ def test_add_courses(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
-
+    token = generate_token('admin')
     response = client.post(
         '/api/courses',
         json={
             'name': 'Western Literature', 
             'code': 'EL101'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 201
@@ -496,12 +537,14 @@ def test_update_courses(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
+    token = generate_token('admin')    
     response = client.put(
         '/api/courses/1',
         json={
             'name': 'Western History', 
             'code': 'H101'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 200
@@ -516,7 +559,8 @@ def test_delete_course(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
 
-    response = client.delete('/api/courses/1')
+    token = generate_token('admin')
+    response = client.delete('/api/courses/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
     assert response.is_json
@@ -526,11 +570,13 @@ def test_delete_course(mock_connection, client):
     
 @patch('app.mysql.connection')
 def test_add_courses_missing_fields(mock_connection, client):
+    token = generate_token('admin')
     response = client.post(
         '/api/courses',
         json={
             'name': 'Western Literature', 
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 400
@@ -545,7 +591,8 @@ def test_get_courses_no_data(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.fetchall.return_value = []
 
-    response = client.get('/api/courses')
+    token = generate_token('admin')
+    response = client.get('/api/courses', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 404
     assert response.is_json
@@ -565,7 +612,8 @@ def test_get_roster_api(mock_connection, client):
         ('idroster',), ('idclass',), ('idstudent',), ('idteacher',)
     )
 
-    response = client.get('/api/roster')
+    token = generate_token('admin')
+    response = client.get('/api/roster', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 200
     assert response.is_json
     data = response.get_json()
@@ -579,7 +627,7 @@ def test_add_roster(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
-
+    token = generate_token('admin')
     response = client.post(
         '/api/roster',
         json={
@@ -587,7 +635,8 @@ def test_add_roster(mock_connection, client):
             'idstudent': 2, 
             'idteacher': 3, 
             'class_period': 'Morning'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 201
@@ -602,6 +651,7 @@ def test_update_roster(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
     
+    token = generate_token('admin')
     response = client.put(
         '/api/roster/1',
         json={
@@ -609,7 +659,8 @@ def test_update_roster(mock_connection, client):
             'idstudent': 2, 
             'idteacher': 3, 
             'class_period': 'Afternoon'
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 200
@@ -624,7 +675,8 @@ def test_delete_roster(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
 
-    response = client.delete('/api/roster/1')
+    token = generate_token('admin')
+    response = client.delete('/api/roster/1', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 200
     assert response.is_json
@@ -634,13 +686,15 @@ def test_delete_roster(mock_connection, client):
     
 @patch('app.mysql.connection')
 def test_add_roster_missing_fields(mock_connection, client):
+    token = generate_token('admin')
     response = client.post(
         '/api/roster',
         json={
             'idclass': 1, 
             'idstudent': 2, 
             'idteacher': 3, 
-        }
+        },
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == 400
@@ -655,7 +709,8 @@ def test_get_roster_no_data(mock_connection, client):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.fetchall.return_value = []
 
-    response = client.get('/api/roster')
+    token = generate_token('admin')
+    response = client.get('/api/roster', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == 404
     assert response.is_json

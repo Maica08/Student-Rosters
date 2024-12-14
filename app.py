@@ -1,14 +1,20 @@
 from flask import Flask, render_template, jsonify, request, make_response
 from flask_mysqldb import MySQL
-from auth import auth_bp
+from auth import auth_bp, role_required
 from werkzeug.exceptions import BadRequest
+from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
 app.config["MYSQL_HOST"] = "localhost"
 app.config["MYSQL_USER"] = "root"
 app.config["MYSQL_PASSWORD"] = ""
 app.config["MYSQL_DB"] = "student_roster_db"
+app.config["JWT_SECRET_KEY"] = "auth_key_1001"  
 mysql = MySQL(app)
+jwt = JWTManager(app)
+
+app.register_blueprint(auth_bp, url_prefix='/auth')
+
 
 def execute_json(query, *args):
     cur = mysql.connection.cursor()
@@ -97,6 +103,7 @@ def get_students():
     return render_template('index.html', results=results)
 
 @app.route("/api/students", methods=["GET"])
+@role_required(["admin", "teacher"])
 def get_students_api():
     query = "SELECT * FROM students"
     results = execute_json(query)
@@ -105,6 +112,7 @@ def get_students_api():
     return make_response(jsonify(results), 200)
 
 @app.route("/api/students", methods=["POST"])
+@role_required(["admin"])
 def add_students():
     data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])
     query = """INSERT INTO students (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
@@ -114,6 +122,7 @@ def add_students():
     return make_response(jsonify({"message": "data created successfully", "rows_affected": rows}), 201)
 
 @app.route("/api/students/<int:idstudents>", methods=["PUT"])
+@role_required(["admin"])
 def update_students(idstudents):
     data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])
     query = """UPDATE students SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idstudents=%s"""
@@ -123,6 +132,7 @@ def update_students(idstudents):
     return make_response(jsonify({"message": "data updated successfully", "rows_affected": rows}), 200)
 
 @app.route("/api/students/<int:idstudents>", methods=["DELETE"])
+@role_required(["admin"])
 def delete_student(idstudents):
     query = "DELETE FROM students WHERE idstudents=%s"
     rows = commit(query, idstudents)
@@ -142,6 +152,7 @@ def get_teachers():
     return render_template('teachers.html', results=results)
 
 @app.route("/api/teachers", methods=["GET"])
+@role_required(["admin"])
 def get_teachers_api():
     query = """SELECT * FROM teachers """
     results = execute_json(query)
@@ -149,7 +160,9 @@ def get_teachers_api():
         return make_response(jsonify({"message": "data not found"}), 404)
     return make_response(jsonify(results), 200)
 
+
 @app.route("/api/teachers", methods=["POST"])
+@role_required(["admin"])
 def add_teachers():
     data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])    
     query = """INSERT INTO teachers (firstname, middlename, lastname, birthdate, gender) VALUES (%s, %s, %s, %s, %s)"""
@@ -162,6 +175,7 @@ def add_teachers():
         ), 201)
 
 @app.route("/api/teachers/<int:idteachers>", methods=["PUT"])
+@role_required(["admin"])
 def update_teachers(idteachers):
     data = validate_request_data(["firstname", "lastname", "birthdate", "gender"])    
     query = """UPDATE teachers SET firstname=%s, middlename=%s, lastname=%s, birthdate=%s, gender=%s WHERE idteachers=%s"""
@@ -174,6 +188,7 @@ def update_teachers(idteachers):
         ), 200)
     
 @app.route("/api/teachers/<int:idteachers>", methods=["DELETE"])
+@role_required(["admin"])
 def delete_teacher(idteachers):
     query = """DELETE FROM teachers WHERE idteachers=%s"""
     rows = commit(query, idteachers)
@@ -185,7 +200,6 @@ def delete_teacher(idteachers):
         ), 200)   
 
 # Classes CRUD
-
 @app.route("/classes", methods=["GET"])
 def get_classes():
     query = """
@@ -248,6 +262,7 @@ def get_class(idclasses):
     return render_template('class.html', results=results, cur_class=cur_class)
 
 @app.route("/api/classes", methods=["POST"])
+@role_required(["admin"])
 def add_classes():
     data = validate_request_data(["description"])
     query = """INSERT INTO classes (description, idroom, idcourse) VALUES (%s, %s, %s)"""
@@ -260,6 +275,7 @@ def add_classes():
         ), 201)
 
 @app.route("/api/classes/<int:idclasses>", methods=["PUT"])
+@role_required(["admin"])
 def update_classes(idclasses):
     data = validate_request_data(["description"])
     query = """UPDATE classes SET description=%s, idroom=%s, idcourse=%s WHERE idclasses=%s"""
@@ -271,8 +287,9 @@ def update_classes(idclasses):
     return make_response(jsonify(
         {"message": "data updated successfully", "rows_affected": rows}
         ), 200)
-    
+
 @app.route("/api/classes/<int:idclasses>", methods=["DELETE"])
+@role_required(["admin"])
 def delete_class(idclasses):
     query = """DELETE FROM classes WHERE idclasses=%s"""
     rows = commit(query, idclasses)
@@ -302,6 +319,7 @@ def get_rooms():
         return results
     return render_template('rooms.html', results=results)
 
+
 @app.route("/api/rooms", methods=["GET"])
 def get_rooms_api():
     query = """SELECT * FROM rooms """
@@ -311,6 +329,7 @@ def get_rooms_api():
     return make_response(jsonify(results), 200)
 
 @app.route("/api/rooms", methods=["POST"])
+@role_required(["admin"])
 def add_rooms():
     data = validate_request_data(["location"])
     query = """INSERT INTO rooms (location, description) VALUES (%s, %s)"""
@@ -323,6 +342,7 @@ def add_rooms():
         ), 201)
 
 @app.route("/api/rooms/<int:idrooms>", methods=["PUT"])
+@role_required(["admin"])
 def update_rooms(idrooms):
     data = validate_request_data(["location"])
     query = """UPDATE rooms SET location=%s, description=%s WHERE idrooms=%s"""
@@ -335,6 +355,7 @@ def update_rooms(idrooms):
         ), 200)
     
 @app.route("/api/rooms/<int:idrooms>", methods=["DELETE"])
+@role_required(["admin"])
 def delete_room(idrooms):
     query = """DELETE FROM rooms WHERE idrooms=%s"""
     rows = commit(query, idrooms)
@@ -373,6 +394,7 @@ def get_courses_api():
     return make_response(jsonify(results), 200)
 
 @app.route("/api/courses", methods=["POST"])
+@role_required(["admin", "teacher"])
 def add_courses():
     data = validate_request_data(["name", "code"])
     query = """INSERT INTO courses (name, code) VALUES (%s, %s)"""
@@ -383,8 +405,9 @@ def add_courses():
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
-
+    
 @app.route("/api/courses/<int:idcourses>", methods=["PUT"])
+@role_required(["admin"])
 def update_courses(idcourses):
     data = validate_request_data(["name", "code"])
     query = """UPDATE courses SET name=%s, code=%s WHERE idcourses=%s"""
@@ -397,6 +420,7 @@ def update_courses(idcourses):
         ), 200)
     
 @app.route("/api/courses/<int:idcourses>", methods=["DELETE"])
+@role_required(["admin"])
 def delete_course(idcourses):
     query = """DELETE FROM courses WHERE idcourses=%s"""
     rows = commit(query, idcourses)
@@ -440,6 +464,7 @@ def get_roster_api():
     return make_response(jsonify(results), 200)
 
 @app.route("/api/roster", methods=["POST"])
+@role_required(["admin"])
 def add_roster():
     data = validate_request_data(["class_period"])
     query = """INSERT INTO roster (idclass, idstudent, idteacher, class_period) VALUES (%s, %s, %s, %s)"""
@@ -450,8 +475,10 @@ def add_roster():
     return make_response(jsonify(
         {"message": "data created successfully", "rows_affected": rows}
         ), 201)
+    
 
 @app.route("/api/roster/<int:idroster>", methods=["PUT"])
+@role_required(["admin"])
 def update_roster(idroster):
     data = validate_request_data(["class_period"])
     query = """UPDATE roster SET idclass=%s, idstudent=%s, idteacher=%s WHERE idroster=%s"""
@@ -464,6 +491,7 @@ def update_roster(idroster):
         ), 200)
     
 @app.route("/api/roster/<int:idroster>", methods=["DELETE"])
+@role_required(["admin"])
 def delete_roster(idroster):
     query = """DELETE FROM roster WHERE idroster=%s"""
     rows = commit(query, idroster)
